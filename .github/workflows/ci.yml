@@ -1,0 +1,94 @@
+name: VRI Platform Monorepo CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  # -------------------------------------------------------------
+  # Job 1: Django Backend Unit Tests & Database Migrations
+  # -------------------------------------------------------------
+  backend-tests:
+    name: Django API & RBAC Test Suite
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: vri_uganda_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: secure_dev_password_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Django Database Migrations
+        env:
+          DATABASE_NAME: vri_uganda_db
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: secure_dev_password_only
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+        run: python manage.py migrate
+
+      - name: Execute Django Unit & RBAC Tests
+        env:
+          DATABASE_NAME: vri_uganda_db
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: secure_dev_password_only
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+        run: python manage.py test
+
+  # -------------------------------------------------------------
+  # Job 2: Frontend Web & Mobile ESLint Static Code Analysis
+  # -------------------------------------------------------------
+  frontend-lint:
+    name: Frontend React & ESLint Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Lint Frontend Web (if package.json exists)
+        run: |
+          if [ -f "frontend-web/package.json" ]; then
+            cd frontend-web
+            npm ci || npm install
+            npm run lint --if-present
+          fi
+
+      - name: Lint Frontend Mobile (if package.json exists)
+        run: |
+          if [ -f "frontend-mobile/package.json" ]; then
+            cd frontend-mobile
+            npm ci || npm install
+            npm run lint --if-present
+          fi
