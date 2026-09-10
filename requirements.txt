@@ -1,0 +1,23 @@
+
+# VRI Platform for Inclusive Communication (Uganda)
+
+# Core Web Framework
+Django>=5.0,<5.1                # High-level Python Web framework [100]
+
+# Relational Database Adapter
+psycopg2-binary>=2.9.0  
+
+# REST API & Serialization
+djangorestframework>=3.14.0    # Toolkit for building Web APIs 
+django-cors-headers>=4.3.0
+
+# Authentication & Security
+djangorestframework-simplejwt>=5.3.1  
+cryptography>=42.0.0          
+
+# Production Server & Static Files
+gunicorn>=21.2.0               
+whitenoise>=6.6.0             
+
+# Utility & Environment Configuration
+python-dotenv>=1.0.1          
