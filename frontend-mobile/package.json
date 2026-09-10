@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@react-native/eslint-config": "^0.87.1",
+    "eslint": "^8.57.1"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --no-error-on-unmatched-pattern --fix"
+  }
+}
