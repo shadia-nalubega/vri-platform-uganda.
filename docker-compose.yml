@@ -3,15 +3,19 @@ services:
     image: postgres:15-alpine
     container_name: vri_postgres_db
     restart: always
+
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-vri_uganda_db}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secure_dev_password_only}
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d vri_uganda_db"]
       interval: 10s
@@ -22,13 +26,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+
     container_name: vri_django_backend
     restart: always
+
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
     volumes:
       - .:/app
+
     ports:
       - "8000:8000"
+
     environment:
       - DATABASE_NAME=${POSTGRES_DB:-vri_uganda_db}
       - DATABASE_USER=${POSTGRES_USER:-postgres}
@@ -36,6 +45,7 @@ services:
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
       - DJANGO_DEBUG=True
+
     depends_on:
       db:
         condition: service_healthy
@@ -45,16 +55,22 @@ services:
     build:
       context: ./frontend-web
       dockerfile: Dockerfile
+
     container_name: vri_react_web
     restart: always
+
     volumes:
       - ./frontend-web:/app
       - /app/node_modules
+
     ports:
       - "3000:3000"
+
     environment:
       - REACT_APP_API_URL=http://localhost:8000
       - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+
     depends_on:
       - backend
 
